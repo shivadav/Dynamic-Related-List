@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+	<apiVersion>57.0</apiVersion>
+	<isExposed>true</isExposed>
+	<description>Salesforce Case Scenario round question.</description>
+	<targets>
+		<target>lightning__RecordPage</target>
+	</targets>
+	<targetConfigs>
+        <targetConfig targets="lightning__RecordPage">
+            <property name="iconName" type="String" label="Related list icon name" default="standard:case" description="Refer to SLDS icons." required="true"/>
+            <property name="pChildObjectApiName" type="String" label="Child Object API name" description="Enter the API name of the child object." required="true"/>
+            <property name="pRelatedListTitle" type="String" label="Related List Title" description="The title of the related list to be displayed." required="true"/>
+            <property name="pChildRelatedName" type="String" label="Child Relation Name" required="true" description="Child Relationship Name (Append '__r' if needed)." />
+            <property name="pChildFields" type="String" label="Columns List" description="Provide API names of the fields in the child object (comma separated)." placeholder="Field1, Field2__c, Lookup.Name, etc." required="true" />
+            </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>
