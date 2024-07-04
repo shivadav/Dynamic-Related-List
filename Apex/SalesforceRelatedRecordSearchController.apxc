@@ -1,0 +1,110 @@
+public class SalesforceRelatedRecordSearchController {
+    @AuraEnabled
+    public static void massUpdateRecords(String jsonString, String objectApiName) {
+
+        List<object> objects = (List<object>)System.JSON.deserializeUntyped(jsonString);
+	String key = (String)objectApiName;
+		key = key.toLowerCase();
+
+	List<SObject> sobjRecordsLst = new List<SObject>();
+	for (Object obj : objects) {
+		Map<String, Object> m = (Map<String, Object>)obj;
+		Schema.SObjectType targetType = Schema.getGlobalDescribe().get(key);
+		SObject sObj = targetType.newSObject();
+		Map<String, Schema.SObjectField> fields = targetType.getDescribe().fields.getMap();
+		for (String fieldName : m.keySet()) {
+			// Filter out any psuedo fields such as LastNameLocal
+            System.debug('fieldName '+fieldname);
+			Schema.SObjectField fld = fields.get(fieldName);
+            System.debug('fld '+fld);
+			if (fld != null) {
+				if (fld.getDescribe().isCreateable() && fld.getDescribe().isUpdateable()) {
+					sObj.put(fieldName, m.get(fieldName)); 
+				}
+                
+			}
+            if(fieldName == 'Id'){
+                    sObj.put(fieldName,m.get(fieldName));
+                }
+		}
+		sobjRecordsLst.add(sObj);
+	}   
+    System.debug('List '+sobjRecordsLst);
+
+     try {
+            update sobjRecordsLst;
+        } catch (Exception e) {
+            System.debug('Error Message '+e.getMessage());
+        }
+    }
+
+    @AuraEnabled
+    public static void massUpdateFields(String selectedDataString,List<FieldWrapper> tableDataList, String objectApiName){
+        List<object> objects = (List<object>)System.JSON.deserializeUntyped(selectedDataString);
+		System.debug('table Data '+tableDataList );
+		String key = (String)objectApiName;
+		key = key.toLowerCase();
+
+	List<SObject> sobjRecordsList = new List<SObject>();
+	for (Object obj : objects) {
+		Map<String, Object> m = (Map<String, Object>)obj;
+		Schema.SObjectType targetType = Schema.getGlobalDescribe().get(key);
+		SObject sObj = targetType.newSObject();
+		Map<String, Schema.SObjectField> fields = targetType.getDescribe().fields.getMap();
+		for (String fieldName : m.keySet()) {
+			// Filter out any psuedo fields such as LastNameLocal
+            System.debug('fieldName '+fieldname);
+			Schema.SObjectField fld = fields.get(fieldName);
+            System.debug('fld '+fld);
+			if (fld != null) {
+				if (fld.getDescribe().isCreateable() && fld.getDescribe().isUpdateable()) {
+					sObj.put(fieldName, m.get(fieldName)); 
+				}
+                
+			}
+            if(fieldName == 'Id'){
+                    sObj.put(fieldName,m.get(fieldName));
+                }
+		}
+		sobjRecordsList.add(sObj);
+		System.debug('Inside Loop '+sobjRecordsList);
+	}   
+
+	Map<String,String> valueToUpdateMap = new Map<String,String>();
+	for(FieldWrapper fieldValue: tableDataList){
+		if(fieldValue.inputValue != null & !String.isEmpty(fieldValue.inputValue) ){
+			valueToUpdateMap.put(fieldValue.selectedValue, fieldValue.inputValue);
+		}
+		
+	}
+
+	System.debug('value to map'+valueToUpdateMap);
+	List<SObject> recordsToUpdate = new List<SObject>();
+
+	System.debug('sObjList '+sobjRecordsList);
+	if (valueToUpdateMap != null && !valueToUpdateMap.isEmpty()) {
+	for(SObject sObj: sobjRecordsList){
+		System.debug('sObj val '+sObj);
+		for(String fieldName: valueToUpdateMap.keySet()){
+			sObj.put(fieldName,valueToUpdateMap.get(fieldName));
+		}
+		recordsToUpdate.add(sObj);
+	}
+	}
+    System.debug('List '+recordsToUpdate);
+
+     try {
+		 if(!valueToUpdateMap.isEmpty() && valueToUpdateMap != null){
+			 update recordsToUpdate;
+		 }
+            
+        } catch (Exception e) {
+            System.debug('Error Message '+e.getMessage());
+        }
+    }
+
+	public class FieldWrapper{
+		@AuraEnabled public String selectedValue{get; set;}
+		@AuraEnabled public String inputValue{get; set;}
+	}
+}
